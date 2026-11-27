@@ -13,6 +13,10 @@ inline int RandomInt(int minVal, int maxVal) {
     return minVal + (std::rand() % (maxVal - minVal + 1));
 }
 
+inline int ClampInt(int val, int minVal, int maxVal) {
+    return (val < minVal) ? minVal : ((val > maxVal) ? maxVal : val);
+}
+
 inline float ClampFloat(float val, float minVal, float maxVal) {
     if (val < minVal) return minVal;
     if (val > maxVal) return maxVal;

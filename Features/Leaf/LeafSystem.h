@@ -92,7 +92,10 @@ struct GroundSpatialCacheEntry {
 struct VisibleParticleEntry {
     int leafIndex;
     float distSq;
+    float scale;
+    float submergedDepth;
     eRenderLOD lod;
+    bool isSubmerged;
 };
 
 // Customizable percentage weights for all 11 debris types per location
@@ -142,6 +145,9 @@ public:
     unsigned char m_nAtlasSlot;
     unsigned char m_nShade;
     unsigned char m_nAlpha;
+    float m_fFadeAlpha;      // 0.0f (invisible) -> 1.0f (fully visible)
+    float m_fFadeSpeed;      // Opacity units per second
+    bool m_bFadingOut;       // True when despawning / out of buffered range
     bool m_bIsTreeLeaf;
     bool m_bCanopyDrift;
     bool m_bOverWater;
@@ -159,7 +165,9 @@ public:
     void AssignTypeForLocation(eBiomeZone biome, unsigned char surfaceType, bool isTreeLeaf);
     void Init(const CVector& centerPos, int index, bool isTreeLeaf, bool snapToGround);
     void AlignToNormal(const CVector& targetNormal, float lerpSpeed);
-    bool CheckOutOfBounds(const CVector& playerPos) const;
+    void BeginFadeOut(float durationSec);
+    void UpdateFade(float dt, int index);
+    bool CheckOutOfBounds(const CVector& camPos) const;
     void ExecuteRespawn(const CVector& playerPos, int index, const CVector& activeWindVec, float currentTime);
     void UpdateAirborne(float dt, float currentTime, int index, unsigned int frameCount, const CVector& activeWindVec, float canopyDriftScale, float distToPlayerSq, bool allowRaycast);
     void UpdateWaterDrift(float dt, float currentTime, int index, const CVector& activeWindVec, bool allowRaycast);
@@ -236,7 +244,14 @@ public:
     static float fClumpRatio;
     static float fClumpRadius;
     static float fDrawDistance;
+    static float fSpawnBufferDistance;
+    static float fMinCameraSpawnDist;
+    static float fFadeInDuration;
+    static float fFadeOutDuration;
     static bool bSnapToGroundOnStart;
+
+    static CVector vecCamVelocity;
+    static float fCamHorizSpeed;
 
     // Leaf Distribution & Biome/Surface Spawn Percentages
     static float fCanopyLeafPct;
@@ -261,5 +276,5 @@ public:
     static void EnqueueRespawn(int leafIdx);
     static void ProcessRespawnQueue(const CVector& playerPos, const CVector& windVec, float currentTime, int maxPerFrame);
     static void DispatchEventDrivenActivations(float currentTime, const CVector& windVec);
-    static bool QueryGroundCached(float x, float y, float refZ, float currentTime, bool allowRaycast, GroundSampleResult& outGround, bool& outOverWater);
+    static bool QueryGroundCached(float x, float y, float refZ, float currentTime, bool allowRaycast, GroundSampleResult& outGround, bool& outOverWater, float upOffset = 1.25f);
 };

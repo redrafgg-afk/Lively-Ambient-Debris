@@ -93,7 +93,10 @@ bool CSurfaceScanner::SampleGround(
         else if (hour < 7.0f) dayFactor = (hour - 5.0f) * 0.5f;
         else if (hour > 19.0f) dayFactor = (21.0f - hour) * 0.5f;
 
-        outResult.fShade01 = ClampFloat(dayLight * dayFactor + nightLight * (1.0f - dayFactor * 0.6f), 0.25f, 1.0f);
+        // Keep the daytime minimum shade at 0.62f so that it doesn't get too dark in shadowed areas
+        float rawShade = dayLight * dayFactor + nightLight * (1.0f - dayFactor * 0.55f);
+        float minShade = 0.32f + 0.30f * dayFactor;
+        outResult.fShade01 = ClampFloat(rawShade, minShade, 1.0f);
         return true;
     }
 
